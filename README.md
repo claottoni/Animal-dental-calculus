@@ -46,7 +46,21 @@ The custom database was used to make the taxonomic classification of the pre-pro
 kraken2 --db $DBNAME --threads $THREADS filename.collapsed.gz --output filename.krk --gzip-compressed --report filename.krk.report
 ```
 
+We ran Bracken to obtain actual quantification data, as described in the manual. We first built the Bracken database, and then ran the samples. 
+We used a read length of 65 bp. 
+```bash
+KRAKEN_DB=customkraken2_50Gb_Nov2020
+THREADS=16
+READ_LEN=65
+bracken -d ${KRAKEN_DB} -i filename.krk.report -o filename.bracken -r ${READ_LEN} 
+```
 
+We used the custom R script `brackenToAbundanceTable.R` to parse the Bracken abundance data for each individual in a table. 
+```bash
+DIR=path/to/bracken/output
+brackenToAbundanceTable.R $DIR
+```
+The script generates two abundance tables, one with taxa as species names (as in the NCBI) and one with the species reported as NCBI IDs. For downastream analysis we used the table with species names. 
 
 
 
