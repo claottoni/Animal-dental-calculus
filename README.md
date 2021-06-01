@@ -55,7 +55,7 @@ READ_LEN=65
 bracken -d ${KRAKEN_DB} -i filename.krk.report -o filename.bracken -r ${READ_LEN} 
 ```
 
-We used the custom R script `brackenToAbundanceTable.R` to parse the Bracken abundance data for each individual from a study dataset in a table. 
+We used the custom R script `brackenToAbundanceTable.R` (see Toolbox repository) to parse the Bracken abundance data for each individual from a study dataset in a table. 
 ```bash
 DIR=path/to/bracken/output
 brackenToAbundanceTable.R $DIR
@@ -87,5 +87,14 @@ cat blanks10.env200.contaminants soil_skin_species.homd.contaminants | sort | un
 grep -vFf full.contaminants taxa_abundance_bracken_names > taxa_abundance_bracken_names.filtered
 ```
 
+The same procedure was used to filter the data from Brealey et al. (2020, MBE). 
+
+### Normalization for genome length and final abundance table
+The abundance table of each dataset was normalized for genome lentgh with the custom Python script (see Toolbox repository). All the tables were merged in a singel one with the custom R script `abundanceTablesMerger.R`.
+
+```bash
+gL-normalizer-lite.py taxa_abundance_bracken_names.txt prokaryotes_viruses_organelles.table taxa_abundance_bracken_names_norm.txt
+abundanceTablesMerger.R *norm.txt
+```
 
 
