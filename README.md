@@ -55,13 +55,37 @@ READ_LEN=65
 bracken -d ${KRAKEN_DB} -i filename.krk.report -o filename.bracken -r ${READ_LEN} 
 ```
 
-We used the custom R script `brackenToAbundanceTable.R` to parse the Bracken abundance data for each individual in a table. 
+We used the custom R script `brackenToAbundanceTable.R` to parse the Bracken abundance data for each individual from a study dataset in a table. 
 ```bash
 DIR=path/to/bracken/output
 brackenToAbundanceTable.R $DIR
 ```
 The script generates two abundance tables, one with taxa as species names (as in the NCBI) and one with the species reported as NCBI IDs. For downastream analysis we used the table with species names. 
 
+### Filtration of contaminating sequences
+In the baboon dental calculus dataset, the ancient Egyptian baboons were filtered of the contaminant sequences by selecting with `awk` in the abundance table the species with >10 and >200 reads, respectively, in the columns corresponding to the NTCs and the environmental controls (see details in Ottoni et al. 2019, Scientific Reports). 
+
+```bash
+awk -F'\t' -v OFS='\t' '($4 > 200) || ($7 > 200) || ($10 > 10) || ($11 > 10)  || ($12 > 10) || ($13 > 10){print $1}' taxa_abundance_bracken_names.txt | tail -n +2 > blanks10.env200.contaminants
+```
+
+A list of soil and skin species was generated from the abundance tables parsed from Bracken (present in two different folders, same filename), and they were merged in one file: 
+```bash
+cut -f1 taxa_abundance_bracken_names.txt > soil_species.list
+cut -f1 taxa_abundance_bracken_names.txt > skin_species.list
+cat skin_species.list soil_species.list | sort | uniq | grep -v "taxon" > soil_skin_species.contaminants
+```
+
+We downloaded the list of species in the HOMD, and used this list in a text file (`HOMD_species_Sept2020.txt`)to removed the species of possible oral origin present from the contaminants list:
+```bash
+grep -vFf HOMD_species_Sept2020.txt soil_skin_species.contaminants > soil_skin_species.homd.contaminants   
+```
+
+We merged the contaminant files and removed them from the abundance table: 
+```bash
+cat blanks10.env200.contaminants soil_skin_species.homd.contaminants | sort | uniq > full.contaminants
+grep -vFf full.contaminants taxa_abundance_bracken_names > taxa_abundance_bracken_names.filtered
+```
 
 
 
