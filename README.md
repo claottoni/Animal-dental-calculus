@@ -12,10 +12,42 @@ vdb-validate filenames.sra
 ```
 Data from Weyrich et al. were downloaded from the Online Ancient Gene Repository (https://www.oagr.org.au/) with `wget`.
 
-## Quality-filtering and adapter-trimming of the reads
+## Pre-processing of raw sequencing data
 All the dental calculus data consisted of paired-end sequencing reads, which were quality-filtered, trimmed of the adapter sequences and merged with AdapterRemoval: 
 
-`AdapterRemoval --file1 filename_1.fastq.gz --file2 filename_2.fastq.gz --basename filename --minlength 30 --minquality 25 --trimns --trimqualities --gzip --threads 16 --collapse`
+```bash
+AdapterRemoval --file1 filename_1.fastq.gz --file2 filename_2.fastq.gz --basename filename --minlength 30 --minquality 25 --trimns --trimqualities --gzip --threads 16 --collapse
+```
+
+We removed exact duplicates and reverse exact duplicates (`-derep 14`) from the merged reads with Prinseq: 
+```bash
+gzip -dc filename.fasta.gz | prinseq-lite.pl -verbose -fastq stdin -graph_data filename.prinseq.gd -graph_stats ld,de -derep 14 -out_good stdout -out_bad null | gzip > filename_prinseq.fastq.gz
+```
+
+## Taxonomic classification of the reads
+
+### Construction of Kraken2 custom database
+We constructed a custom database of 50 Gb including complete genomes of Bacteria, Archaea and Viruses from the NCBI RefSeq (as of November 2020) following the manual of Kraken2: 
+
+```bash
+DBNAME=customkraken2_50Gb_Nov2020
+DBSIZE=50000000000
+THREADS=16
+kraken2-build --download-taxonomy --threads $THREADS --db $DBNAME
+kraken2-build --download-library bacteria --threads $THREADS --db $DBNAME
+kraken2-build --download-library viral --threads $THREADS --db $DBNAME
+kraken2-build --download-library archaea --threads $THREADS --db $DBNAME
+kraken2-build --build --threads $THREADS --db $DBNAME --max-db-size $DBSIZE 
+```
+
+### Taxonomic classification of reads with Kraken2 custom database
+The custom database was used to make the taxonomic classification of the pre-processed reads. 
+```bash
+kraken2 --db $DBNAME --threads $THREADS filename.collapsed.gz --output filename.krk --gzip-compressed --report filename.krk.report
+```
+
+
+
 
 
 
