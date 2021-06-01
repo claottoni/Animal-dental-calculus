@@ -1,2 +1,2 @@
-# Animal-dental-calculus
-Additional information for the analysis of animal dental calculus shotgun sequencing data
+## Metagenomic analysis of animal dental calculus
+Details on code and bioinformatic tools used to analyse shotgun DNA sequencing datasets. 
