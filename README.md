@@ -90,14 +90,14 @@ grep -vFf full.contaminants taxa_abundance_bracken_names > taxa_abundance_bracke
 The same procedure was used to filter the data from Brealey et al. (2020, MBE). 
 
 ### Normalization for genome length and final abundance table
-The abundance table of each dataset was normalized for genome lentgh with the custom Python script (see Toolbox repository). All the tables were merged in a singel one with the custom R script `abundanceTablesMerger.R`.
+The abundance table of each dataset was normalized for genome lentgh with the custom Python script (see Toolbox repository). All the tables were merged in a single one with the custom R script `abundanceTablesMerger.R`.
 
 ```bash
 gL-normalizer-lite.py taxa_abundance_bracken_names.txt prokaryotes_viruses_organelles.table taxa_abundance_bracken_names_norm.txt
 abundanceTablesMerger.R *norm.txt
 ```
 
-We also generated an abundance table that included the full taxonomic classification (up to Phylum) for each species, which was used to generate abudance table at the genus-level. We did that by isolating the species names in the abundance table, and by using them with the program taxonomy-ranks (https://github.com/linzhi2013/taxonomy_ranks/blob/master/README.md)
+We also generated an abundance table that included the full taxonomic classification (up to Phylum) for each species, which was used to generate abudance table at the genus-level. We did that by isolating the species names in the abundance table, and by using them with the program taxonomy-ranks (https://github.com/linzhi2013/taxonomy_ranks/blob/master/README.md) to retrieve the full taxonomy. The text file with the full taxonomy was then pasted to the original species abundance table. 
 
 ```bash
 awk -F'\t' '{print $1}' abundance_table.merged | tail -n +2 > abundance_table.merged.species
