@@ -115,7 +115,7 @@ After that, we generated a table of genus abundances with the script `genustabGe
 genustabGenerator.R abundance_table.merged.taxonomy.final.noVirus 
 ```
 
-### R session
+## R session
 We imported the table in R and normalized the genus abundances for sequencing depth by reating a function for the Total Sum Scaling in which the read count of each genus is divided by the total number of read counts of the sample.
 
 ```R
@@ -144,7 +144,7 @@ tab.tss.flt = result.filter$data.filter
 
 We created a metadata vector `group` that assigned to each sample in the columns of the table of genera abundances (normalized and filtered) the biological orgin of the sample, namely: Ancient baboon, Baboon zoo, Gorilla, Reindeer, Brown Bear, Chimpanzee, Historic Human, and so on (as defined in figure legends of the manuscript). 
 
-## non-Metric Multidimensional Scaling (nMDS)
+### non-Metric Multidimensional Scaling (nMDS)
 
 We used metaMDS in vegan to run the nMDS
 
@@ -163,7 +163,7 @@ abline(h=0, lty=3, col="grey")
 points(nmds, cex=1, bg=bg[factor(group)], pch=pch[factor(group)], col=coul[factor(group)], lwd=0.9)
 ```
 
-## Cluster analysis (UPGMA)
+### Cluster analysis (UPGMA)
 
 We used vegan to calculated the Bray-Curtis and run the UPGMA with hclust
 
@@ -178,7 +178,7 @@ legend("topleft", legend = sort(unique(group)), bty = "n", col = coul, pch = pch
 add.scale.bar(cex=0.8)
 ```
 
-## Deseq2 analysis
+### Deseq2 analysis
 We restricted the analysis to selected samples (numbering follows the table that we generated), converted the table in counts per million (cpm) and transformed abundances to integers (otherwise Deseq2 returns an error message). 
 
 ```R
