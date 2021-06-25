@@ -196,13 +196,13 @@ for (i in 1:ncol(tab.deseq2.cpm)) {
 }
 ```
 
-We created a metadata text file in the form: 
-Sample_ID<tab>Group 
+We created a metadata tab-separated text file in the form: 
+Sample_ID\tGroup 
 
 We imported in R the metadata file and run Deseq2 as follows: 
 
 ```R
-metadata = read.delim("/Users/claudio/Documents/WORK/7-MANUSCRIPTS/manuscript_animal_oral_microbiome/Deseq2/metadata_deseq2_animals.txt", header=T)
+metadata = read.delim("metadata_deseq2_animals.txt", header=T)
 
 # move rownames to column 1 for deSeq format table.
 library(DESeq2)
@@ -217,6 +217,71 @@ dds.data <- DESeqDataSetFromMatrix(countData=tab.deseq2.cpm.int.ds,
 # Run deSeq                              
 dds.data = DESeq(dds.data)
 ```
-  
 
+Finally, we ran the contrast function of Deseq2 for each groups pair, we filtered for padj values and sorted the discriminant taxa based on the baseMean values.
+
+``` R
+res1 <- results(dds.data, contrast=c("group","Baboon","Reindeer"))
+res2 <- results(dds.data, contrast=c("group","Baboon","Bear"))
+res3 <- results(dds.data, contrast=c("group","Baboon","Chimpanzee"))
+res4 <- results(dds.data, contrast=c("group","Baboon","Modern human"))	
+res5 <- results(dds.data, contrast=c("group","Bear","Reindeer"))	
+res6 <- results(dds.data, contrast=c("group","Bear","Chimpanzee"))	
+res7 <- results(dds.data, contrast=c("group","Bear","Modern human"))
+res8 <- results(dds.data, contrast=c("group","Reindeer","Chimpanzee"))
+res9 <- results(dds.data, contrast=c("group","Reindeer","Modern human"))
+res10 <- results(dds.data, contrast=c("group","Chimpanzee","Modern human"))
+res11 <- results(dds.data, contrast=c("group","Historic human","Baboon"))
+res12 <- results(dds.data, contrast=c("group","Historic human","Reindeer"))
+res13 <- results(dds.data, contrast=c("group","Historic human","Bear"))
+res14 <- results(dds.data, contrast=c("group","Historic human","Chimpanzee"))
+
+# sort based on p-value adjusted
+resOrdered1 <- res1[order(res1$padj),]
+resOrdered2 <- res2[order(res2$padj),]
+resOrdered3 <- res3[order(res3$padj),]
+resOrdered4 <- res4[order(res4$padj),]
+resOrdered5 <- res5[order(res5$padj),]
+resOrdered6 <- res6[order(res6$padj),]
+resOrdered7 <- res7[order(res7$padj),]
+resOrdered8 <- res8[order(res8$padj),]
+resOrdered9 <- res9[order(res9$padj),]
+resOrdered10 <- res10[order(res10$padj),]
+resOrdered11 <- res11[order(res11$padj),]
+resOrdered12 <- res12[order(res12$padj),]
+resOrdered13 <- res13[order(res13$padj),]
+resOrdered14 <- res14[order(res14$padj),]
+
+# get only significant taxa based on p-value adjusted
+resSig1 <- subset(resOrdered1, padj < 0.1)
+resSig2 <- subset(resOrdered2, padj < 0.1)
+resSig3 <- subset(resOrdered3, padj < 0.1)
+resSig4 <- subset(resOrdered4, padj < 0.1)
+resSig5 <- subset(resOrdered5, padj < 0.1)
+resSig6 <- subset(resOrdered6, padj < 0.1)
+resSig7 <- subset(resOrdered7, padj < 0.1)
+resSig8 <- subset(resOrdered8, padj < 0.1)
+resSig9 <- subset(resOrdered9, padj < 0.1)
+resSig10 <- subset(resOrdered10, padj < 0.1)
+resSig11 <- subset(resOrdered11, padj < 0.1)
+resSig12 <- subset(resOrdered12, padj < 0.1)
+resSig13 <- subset(resOrdered13, padj < 0.1)
+resSig14 <- subset(resOrdered14, padj < 0.1)
+
+# sort significant values based on abundance:
+x1 = resSig1[order(resSig1$baseMean),]
+x2 = resSig2[order(resSig2$baseMean),]
+x3 = resSig3[order(resSig3$baseMean),]
+x4 = resSig4[order(resSig4$baseMean),]
+x5 = resSig5[order(resSig5$baseMean),]
+x6 = resSig6[order(resSig6$baseMean),]
+x7 = resSig7[order(resSig7$baseMean),]
+x8 = resSig8[order(resSig8$baseMean),]
+x9 = resSig9[order(resSig9$baseMean),]
+x10 = resSig10[order(resSig10$baseMean),]
+x11 = resSig11[order(resSig11$baseMean),]
+x12 = resSig12[order(resSig12$baseMean),]
+x13 = resSig13[order(resSig13$baseMean),]
+x14 = resSig14[order(resSig14$baseMean),]
+```
 
