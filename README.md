@@ -116,12 +116,107 @@ genustabGenerator.R abundance_table.merged.taxonomy.final.noVirus
 ```
 
 ### R session
-We imported the table in R and normalized the table for sequencing depth with the Total Sum Scaling. 
+We imported the table in R and normalized the genus abundances for sequencing depth by reating a function for the Total Sum Scaling in which the read count of each genus is divided by the total number of read counts of the sample.
 
 ```R
 tab = t(read.delim("abundance_table.genus", header=T, fill=T, row.names=1, sep="\t"))
+TSS.divide = function(x){
+ x/sum(x)
+}
+tab.tss = t(apply(tab.red, 1, TSS.divide))
+```
+We created a function to filter out the taxa represented below the threshold of 0.02% 
+
+```R
+low.count.removal = function(
+                        data, # OTU count data frame of size n (sample) x p (OTU)
+                        percent=0.02 # cutoff chosen
+                        ){
+    keep.otu = which(colSums(data)*100/(sum(colSums(data))) > percent)
+    data.filter = data[,keep.otu]
+    return(list(data.filter = data.filter, keep.otu = keep.otu))
+}
+
+result.filter = low.count.removal(tab.tss, percent=0.02)
+# get the actual filtered data from results
+tab.tss.flt = result.filter$data.filter
 ```
 
+We created a metadata vector `group` that assigned to each sample in the columns of the table of genera abundances (normalized and filtered) the biological orgin of the sample, namely: Ancient baboon, Baboon zoo, Gorilla, Reindeer, Brown Bear, Chimpanzee, Historic Human, and so on (as defined in figure legends of the manuscript). 
 
+## non-Metric Multidimensional Scaling (nMDS)
+
+We used metaMDS in vegan to run the nMDS
+
+```R
+library(vegan)
+nmds = metaMDS(tab.tss.flt, distance="bray", k=2, trymax=200, autotransform = FALSE, engine = "monoMDS", maxit = 200)
+nmds = metaMDS(tab.tss.flt, distance="bray", k=2, trymax=200, autotransform = FALSE, engine = "monoMDS", maxit = 200, previous.best=nmds)
+```
+
+We set up `pch`, `bg` and `coul` to customize the charts and used plot and the metadata in the `group` vector to plot the results of the the nMDS
+
+```R
+plot(nmds, type="n", main="Bray-Curtis", cex.axis=0.75, cex.lab=0.75, xlab="", ylab="", xlim=c(-2.3,2.5), ylim=c(-2,2), xaxs="i", yaxs="i")
+abline(v=0, lty=3, col="grey")
+abline(h=0, lty=3, col="grey")
+points(nmds, cex=1, bg=bg[factor(group)], pch=pch[factor(group)], col=coul[factor(group)], lwd=0.9)
+```
+
+## Cluster analysis (UPGMA)
+
+We used vegan to calculated the Bray-Curtis and run the UPGMA with hclust
+
+```R
+library(vegan)
+library(ape)
+bray_dist = vegdist(tab.tss.flt, method = "bray", binary = FALSE, diag = FALSE, upper = FALSE, na.rm = FALSE)
+bray_dist.clust = hclust(bray_dist, method="average", members = NULL)
+plot(as.phylo(bray_dist.clust), type = "unrooted", cex = 0.6, lab4ut="axial", no.margin=T, show.tip.label=T, label.offset=0.02, edge.color = "gray", edge.width = 1, edge.lty = 1)
+tiplabels(pch=pch[as.factor(group)], col = coul[as.factor(group)], cex=1.3, lwd=1, bg=bg[as.factor(group)])          
+legend("topleft", legend = sort(unique(group)), bty = "n", col = coul, pch = pch, pt.cex=1.3, cex=0.8, pt.bg=bg, pt.lwd=1)
+add.scale.bar(cex=0.8)
+```
+
+## Deseq2 analysis
+We restricted the analysis to selected samples (numbering follows the table that we generated), converted the table in counts per million (cpm) and transformed abundances to integers (otherwise Deseq2 returns an error message). 
+
+```R
+tab.deseq2 = tab.tss.flt[c(1:6,9,10,		#Baboons
+							13,16,			              #Gorillas
+							17:21,			              #Reindeer
+							22,23,24,26,	            #Bear
+							28:46,255,		            #Chimps
+							182:225,		              #Historic humans
+							230:239),]		            #Modern humans
+tab.deseq2.cpm = tab.deseq2*1000000
+tab.deseq2.cpm.int <- tab.deseq2.cpm
+for (i in 1:ncol(tab.deseq2.cpm)) {
+    tab.deseq2.cpm.int[,i] <- as.integer(tab.deseq2.cpm[,i])
+}
+```
+
+We created a metadata text file in the form: 
+Sample_ID<tab>Group 
+
+We imported in R the metadata file and run Deseq2 as follows: 
+
+```R
+metadata = read.delim("/Users/claudio/Documents/WORK/7-MANUSCRIPTS/manuscript_animal_oral_microbiome/Deseq2/metadata_deseq2_animals.txt", header=T)
+
+# move rownames to column 1 for deSeq format table.
+library(DESeq2)
+library(tibble)
+tab.deseq2.cpm.int.ds = rownames_to_column(as.data.frame(t(tab.deseq2.cpm.int)), var = "species")
+
+# Prepare deSeq
+dds.data <- DESeqDataSetFromMatrix(countData=tab.deseq2.cpm.int.ds, 
+                              colData=metadata, 
+                              design=~group, tidy = TRUE)
+
+# Run deSeq                              
+dds.data = DESeq(dds.data)
+```
+  
 
 
