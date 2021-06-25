@@ -97,12 +97,10 @@ gL-normalizer-lite.py taxa_abundance_bracken_names.txt prokaryotes_viruses_organ
 abundanceTablesMerger.R *norm.txt
 ```
 
-We also generated an abundance table that included the full taxonomic classification (up to Phylum) for each species, which was used to generate abudance table at the genus-level. We did that by isolating the species names in the abundance table, and by using them with the program taxonomy-ranks (https://github.com/linzhi2013/taxonomy_ranks/blob/master/README.md) to retrieve the full taxonomy. The text file with the full taxonomy was then pasted to the original species abundance table. 
+We generated an abundance table that included the full taxonomic classification (up to Phylum) for each species, which was then used to generate abudance table at the genus-level. We did that by using the script `getFullTaxaranks.sh` (see Toolbox repository). To run the script, you have to install the program taxonomy-ranks (https://github.com/linzhi2013/taxonomy_ranks/blob/master/README.md).
 
 ```bash
-awk -F'\t' '{print $1}' abundance_table.merged | tail -n +2 > abundance_table.merged.species
-taxaranks -i abundance_table.merged.species -o abundance_table.merged.taxonomy
-paste abundance_table.merged.taxonomy abundance_table.merged > abundance_table.merged.final
+getFullTaxaranks.sh -i abundance_table.merged 
 ```
 
 
