@@ -110,7 +110,7 @@ getFullTaxaranks.sh -i abundance_table.merged
 ```
 grep -v "Viruses" abundance_table.merged.final > abundance_table.merged.final.noVirus
 
-After that, we generated a table of genus abundances with the script `genustabGenerator.R` (see Toolbox repository). 
+After that, we generated a table of genus abundances with the script `genustabGenerator.R` (see Toolbox repository). The script creates a table `abundance_table.genus`
 
 ```bash
 genustabGenerator.R abundance_table.merged.taxonomy.final.noVirus 
