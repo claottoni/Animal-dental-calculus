@@ -103,4 +103,18 @@ We generated an abundance table that included the full taxonomic classification 
 getFullTaxaranks.sh -i abundance_table.merged 
 ```
 
+We removed the Virues from the table with `grep`. 
+
+```bash
+getFullTaxaranks.sh -i abundance_table.merged 
+```
+grep -v "Viruses" abundance_table.merged.final > abundance_table.merged.final.noVirus
+
+After that, we generated a table of genus abundances with the script `genustabGenerator.R` (see Toolbox repository). 
+
+```bash
+genustabGenerator.R abundance_table.merged.taxonomy.final.noVirus 
+```
+
+
 
